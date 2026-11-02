@@ -9,6 +9,9 @@ body{
     background:#070b17;
     color:white;
     overflow-x:hidden;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
 }
 
 /* animated background blobs */
@@ -240,17 +243,13 @@ button{
     font-weight:bold;
 }
 
-/*body.light{
-    background:#f8fafc;
-    color:black;
-}*/
-
 .register-page{
     min-height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
     background:linear-gradient(135deg,#070b17,#111827);
+    flex:1;
 }
 
 .register-card{
@@ -429,7 +428,6 @@ tr{transition:background .2s}tr:hover td{background:rgba(255,255,255,.04)}
 .chat-form input:focus{outline:none;box-shadow:0 0 0 2px #6366f1}
 .chat-form button{padding:0 16px;border-radius:12px;background:#6366f1;color:#fff}
 
-
 /* ===== Бургер, секции, Google ===== */
 .navlink{color:#cbd5e1;text-decoration:none;padding:8px 10px;transition:color .2s}
 .navlink:hover{color:#fff}
@@ -474,3 +472,51 @@ tr{transition:background .2s}tr:hover td{background:rgba(255,255,255,.04)}
 .register-card .or span{display:inline;margin:0;color:#64748b}
 .register-card .gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#111}
 .register-card .gbtn:hover{box-shadow:0 8px 28px rgba(255,255,255,.2)}
+
+/* ===== FOOTER ===== */
+footer {
+    margin-top: auto;
+    background: rgba(7, 11, 23, 0.85);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    padding: 30px 24px;
+    width: 100%;
+}
+
+.footer-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.footer-content p {
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 20px;
+}
+
+.footer-links a {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    color: #6366f1;
+}
+
+@media(max-width: 600px) {
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+}
