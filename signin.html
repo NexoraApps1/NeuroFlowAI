@@ -35,6 +35,10 @@
 import { supabase } from './supabase.js';
 
 const msg = document.getElementById('msg');
+
+// после возврата из Google сессия уже есть — сразу в кабинет
+const { data: { session: cur } } = await supabase.auth.getSession();
+if (cur) location.href = 'dashboard.html';
 const btn = document.getElementById('submitBtn');
 document.getElementById('google').onclick = async () => {
   const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: new URL('dashboard.html', location.href).href } });

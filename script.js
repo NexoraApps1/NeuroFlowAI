@@ -36,7 +36,7 @@ if (dashboard) {
 }
 
 // fake live notifications
-/* const notifications = [
+const notifications = [
   "New signup from Astana",
   "Enterprise client upgraded plan",
   "AI assistent generated successfully",
@@ -60,7 +60,7 @@ function showNotification() {
   }, 4000);
 }
 
-setInterval(showNotification, 5000); */
+setInterval(showNotification, 5000);
 
 /*// dark/light mode
 const toggle = document.createElement("button");
