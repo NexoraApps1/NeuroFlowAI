@@ -3,36 +3,147 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard | NeuroFlow AI</title>
+<meta name="robots" content="noindex">
+<title>Личный кабинет | NeuroFlow AI</title>
 <link rel="stylesheet" href="style.css">
+<style>
+  .cab{max-width:1000px;margin:0 auto;padding:110px 24px 60px;display:grid;grid-template-columns:230px 1fr;gap:24px}
+  .glass{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:28px;backdrop-filter:blur(18px)}
+  .side{display:flex;flex-direction:column;gap:8px;height:fit-content}
+  .side button{background:transparent;color:#cbd5e1;text-align:left;border-radius:14px;padding:14px 16px}
+  .side button.on{background:#6366f1;color:white}
+  .me{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .ava{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#06b6d4,#6366f1);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold}
+  .me small{color:#94a3b8;display:block;word-break:break-all}
+  .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;background:rgba(99,102,241,.25);color:#a5b4fc}
+  .tab{display:none}.tab.on{display:block}
+  .tab h2{margin-bottom:20px}
+  .tab label{display:block;color:#94a3b8;margin:14px 0 6px;font-size:14px}
+  .tab input{width:100%;padding:14px;border:none;border-radius:12px;background:rgba(255,255,255,.08);color:white}
+  .tab input[disabled]{opacity:.6}
+  .go{margin-top:18px;background:#6366f1;color:white;border-radius:14px}
+  .note{margin-top:14px;min-height:20px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px}
+  .stats div{background:rgba(255,255,255,.04);border-radius:16px;padding:18px}
+  .stats h3{font-size:32px}.stats span{color:#94a3b8;font-size:14px}
+  .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:14px;gap:10px}
+  .row span:last-child{color:#94a3b8;white-space:nowrap}
+  @media(max-width:760px){.cab{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-<div class="register-page">
-  <div class="register-card">
-    <h2 id="title">Загрузка...</h2>
-    <br>
-    <p>Ваше рабочее пространство для ИИ готово.</p>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <button id="adminBtn" style="display:none" onclick="location.href='admin.html'">Админ-панель</button>
-      <button onclick="location.href='index.html'">На главную</button>
-      <button id="logoutBtn">Выйти</button>
+<header><nav><h2><a onclick="location.href='index.html'"> NeuroFlow AI </a></h2></nav></header>
+
+<div class="cab">
+  <aside class="glass side">
+    <div class="me">
+      <div class="ava" id="ava">?</div>
+      <div><b id="meName">...</b><small id="meMail"></small><span class="badge" id="meRole"></span></div>
     </div>
-  </div>
+    <button data-tab="profile" class="on">👤 Профиль</button>
+    <button data-tab="security">🔒 Безопасность</button>
+    <button data-tab="admin" id="adminTabBtn" style="display:none">🛠 Администрирование</button>
+    <button id="logoutBtn">↩ Выйти</button>
+  </aside>
+
+  <main class="glass">
+    <section class="tab on" id="profile">
+      <h2>Профиль</h2>
+      <label>Имя</label><input id="fullName">
+      <label>Email</label><input id="email" disabled>
+      <label>Дата регистрации</label><input id="created" disabled>
+      <button class="go" id="saveProfile">Сохранить</button>
+      <p class="note" id="pNote"></p>
+    </section>
+
+    <section class="tab" id="security">
+      <h2>Безопасность</h2>
+      <label>Новый пароль</label><input id="pass1" type="password" placeholder="Минимум 6 символов">
+      <label>Повторите пароль</label><input id="pass2" type="password">
+      <button class="go" id="savePass">Сменить пароль</button>
+      <p class="note" id="sNote"></p>
+    </section>
+
+    <section class="tab" id="admin">
+      <h2>Администрирование</h2>
+      <div class="stats">
+        <div><h3 id="cTotal">0</h3><span>Пользователей</span></div>
+        <div><h3 id="cAdmins">0</h3><span>Админов</span></div>
+        <div><h3 id="cWeek">0</h3><span>За 7 дней</span></div>
+      </div>
+      <h3 style="margin-bottom:8px">Последние регистрации</h3>
+      <div id="recent"></div>
+      <button class="go" onclick="location.href='admin.html'">Открыть админ-панель →</button>
+    </section>
+  </main>
 </div>
 
 <script type="module">
 import { supabase, getSession } from './supabase.js';
 
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const say = (el, text, ok) => { el.style.color = ok ? '#4ade80' : '#f87171'; el.textContent = text; };
+
 const s = await getSession();
-if (!s) { location.href = 'signin.html'; }
-else {
-  const name = s.profile?.full_name || s.user.email;
-  document.getElementById('title').textContent = `Добро пожаловать, ${name} 🚀`;
-  if (s.profile?.role === 'admin') document.getElementById('adminBtn').style.display = 'block';
+if (!s) location.href = 'signin.html';
+const { user, profile } = s;
+const isAdmin = profile?.role === 'admin';
+
+function fillHeader() {
+  const name = profile?.full_name || user.email;
+  $('meName').textContent = name;
+  $('meMail').textContent = user.email;
+  $('ava').textContent = name[0].toUpperCase();
+  $('meRole').textContent = isAdmin ? 'администратор' : 'пользователь';
 }
-document.getElementById('logoutBtn').onclick = async () => {
-  await supabase.auth.signOut(); location.href = 'index.html';
+fillHeader();
+$('fullName').value = profile?.full_name || '';
+$('email').value = user.email;
+$('created').value = new Date(profile?.created_at || user.created_at).toLocaleDateString('ru-RU');
+
+// вкладки
+document.querySelectorAll('.side [data-tab]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.side [data-tab]').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); $(b.dataset.tab).classList.add('on');
+});
+
+// сохранить имя
+$('saveProfile').onclick = async () => {
+  const full_name = $('fullName').value.trim();
+  if (!full_name) return say($('pNote'), 'Введите имя', false);
+  const { error } = await supabase.from('profiles').update({ full_name }).eq('id', user.id);
+  if (error) return say($('pNote'), error.message, false);
+  await supabase.auth.updateUser({ data: { full_name } });
+  profile.full_name = full_name; fillHeader();
+  say($('pNote'), 'Сохранено ✓', true);
 };
+
+// сменить пароль
+$('savePass').onclick = async () => {
+  const p = $('pass1').value;
+  if (p.length < 6) return say($('sNote'), 'Пароль минимум 6 символов', false);
+  if (p !== $('pass2').value) return say($('sNote'), 'Пароли не совпадают', false);
+  const { error } = await supabase.auth.updateUser({ password: p });
+  if (error) return say($('sNote'), error.message, false);
+  $('pass1').value = $('pass2').value = '';
+  say($('sNote'), 'Пароль изменён ✓', true);
+};
+
+// вкладка админа
+if (isAdmin) {
+  $('adminTabBtn').style.display = 'block';
+  const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+  const all = data || [];
+  $('cTotal').textContent = all.length;
+  $('cAdmins').textContent = all.filter(u => u.role === 'admin').length;
+  $('cWeek').textContent = all.filter(u => Date.now() - new Date(u.created_at) < 7 * 864e5).length;
+  $('recent').innerHTML = all.slice(0, 5).map(u =>
+    `<div class="row"><span>${esc(u.full_name || '—')} · ${esc(u.email)}</span><span>${new Date(u.created_at).toLocaleDateString('ru-RU')}</span></div>`).join('');
+}
+
+$('logoutBtn').onclick = async () => { await supabase.auth.signOut(); location.href = 'index.html'; };
 </script>
 </body>
 </html>
