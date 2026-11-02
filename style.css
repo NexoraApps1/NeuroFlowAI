@@ -316,3 +316,7 @@ button{
 .contact form{display:flex;flex-direction:column;gap:14px}
 .contact input,.contact textarea{padding:16px;border:none;border-radius:14px;background:rgba(255,255,255,.06);color:white;font-size:15px}
 .contact button{background:#6366f1;color:white;border-radius:14px;padding:16px}
+
+.navbox{display:flex;gap:10px;align-items:center}
+.navbtn.ghost{background:transparent;border:1px solid rgba(255,255,255,.25)}
+@media(max-width:600px){nav{padding:10px 16px}.navbtn{padding:8px 12px;font-size:13px}}

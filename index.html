@@ -14,7 +14,10 @@
 <header>
   <nav>
     <h2><a onclick="window.location.href='index.html'"> NeuroFlow AI </a></h2>
-    <a id="authLink" class="navbtn" href="signin.html">Войти</a>
+    <div class="navbox" id="authBox">
+      <a class="navbtn ghost" href="signin.html">Войти</a>
+      <a class="navbtn" href="register.html">Зарегистрироваться</a>
+    </div>
   </nav>
 </header>
 
@@ -89,7 +92,7 @@ const $ = id => document.getElementById(id);
 
 // кнопка входа / кабинета
 const { data: { session } } = await supabase.auth.getSession();
-if (session) { $('authLink').textContent = 'Личный кабинет'; $('authLink').href = 'dashboard.html'; }
+if (session) $('authBox').innerHTML = '<a class="navbtn" href="dashboard.html">Личный кабинет</a>';
 
 // реальное число пользователей
 const { data: cnt } = await supabase.rpc('public_user_count');
