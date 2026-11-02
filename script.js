@@ -41,7 +41,7 @@ if (dashboard) {
   "Enterprise client upgraded plan",
   "AI assistent generated successfully",
   "New team member invited",
-]; */
+]; 
 
 function showNotification() {
   const note = document.createElement("div");
@@ -60,7 +60,7 @@ function showNotification() {
   }, 4000);
 }
 
-setInterval(showNotification, 5000);
+setInterval(showNotification, 5000); */
 
 /*// dark/light mode
 const toggle = document.createElement("button");
