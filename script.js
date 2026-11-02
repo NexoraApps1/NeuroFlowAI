@@ -35,29 +35,6 @@ if (dashboard) {
   });
 }
 
-// fake live notifications
-const notifications = [
-  "New signup from Astana",
-  "Enterprise client upgraded plan",
-  "AI assistent generated successfully",
-  "New team member invited",
-];
 
-function showNotification() {
-  const note = document.createElement("div");
-  note.className = "notification";
-  note.innerText =
-    notifications[Math.floor(Math.random() * notifications.length)];
-
-  document.body.appendChild(note);
-
-  setTimeout(() => {
-    note.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    note.remove();
-  }, 4000);
-}
 
 setInterval(showNotification, 5000);
