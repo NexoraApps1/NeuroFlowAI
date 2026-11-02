@@ -1,8 +1,8 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 // ВСТАВЬ СВОИ ДАННЫЕ (Supabase → Settings → API Keys)
-const SUPABASE_URL = 'https://ТВОЙ-ПРОЕКТ.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_ТВОЙ_КЛЮЧ'; // только publishable, НЕ secret!
+const SUPABASE_URL = 'https://ngpgteekxgyuoajfhmcw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_ayCI9IpudxfMQBGxlqem_g_ruhXxSn8'; // только publishable, НЕ secret!
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
