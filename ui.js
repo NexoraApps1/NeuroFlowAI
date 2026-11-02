@@ -1,4 +1,4 @@
-// Общие эффекты и кнопка "показать пароль"
+// Общие эффекты, кнопка "показать пароль" и логика чат-бота
 (() => {
   const bar = document.createElement('div'); bar.id = 'progress';
   const glow = document.createElement('div'); glow.id = 'glow';
@@ -39,4 +39,82 @@
     };
     w.appendChild(b);
   });
+
+  // === Интерактивный Чат-бот ===
+  const chatBox = document.getElementById('chatBox');
+  const openBtn = document.getElementById('openChatBtn');
+  const closeBtn = document.getElementById('closeChatBtn');
+  const heroBtn = document.getElementById('heroChatBtn');
+  const navBtn = document.getElementById('navChatBtn');
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatInput');
+  const chatMsgs = document.getElementById('chatMsgs');
+
+  const toggleChat = (show) => {
+    if (!chatBox) return;
+    if (show === undefined) chatBox.classList.toggle('open');
+    else if (show) chatBox.classList.add('open');
+    else chatBox.classList.remove('open');
+    if (chatBox.classList.contains('open')) {
+      chatInput?.focus();
+    }
+  };
+
+  if (openBtn) openBtn.onclick = () => toggleChat(true);
+  if (closeBtn) closeBtn.onclick = () => toggleChat(false);
+  if (heroBtn) heroBtn.onclick = () => toggleChat(true);
+  if (navBtn) navBtn.onclick = () => toggleChat(true);
+
+  if (chatForm) {
+    chatForm.onsubmit = (e) => {
+      e.preventDefault();
+      const txt = chatInput.value.trim();
+      if (!txt) return;
+
+      // Отрисовка сообщения пользователя
+      const uMsg = document.createElement('div');
+      uMsg.className = 'cm me';
+      uMsg.textContent = txt;
+      chatMsgs.appendChild(uMsg);
+      chatInput.value = '';
+      chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+      // Эффект печати бота
+      const typing = document.createElement('div');
+      typing.className = 'cm bot typing';
+      typing.textContent = 'Печатает...';
+      chatMsgs.appendChild(typing);
+      chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+      setTimeout(() => {
+        typing.remove();
+        const reply = getBotReply(txt);
+        const bMsg = document.createElement('div');
+        bMsg.className = 'cm bot';
+        bMsg.textContent = reply;
+        chatMsgs.appendChild(bMsg);
+        chatMsgs.scrollTop = chatMsgs.scrollHeight;
+      }, 700);
+    };
+  }
+
+  function getBotReply(q) {
+    const s = q.toLowerCase();
+    if (s.includes('привет') || s.includes('здравствуй') || s.includes('добрый')) {
+      return 'Здравствуйте! Рад вас приветствовать. Как я могу помочь вам сегодня?';
+    }
+    if (s.includes('цена') || s.includes('стоимость') || s.includes('тариф') || s.includes('сколько')) {
+      return 'У нас есть 3 тарифа: \n1. Старт — Бесплатно 14 дней.\n2. Бизнес — 29 000 ₸/мес.\n3. Корпоративный — индивидуально.\nПодробнее можно узнать в разделе "Тарифы"!';
+    }
+    if (s.includes('пробн') || s.includes('бесплатн')) {
+      return 'Вы можете протестировать систему бесплатно в течение 14 дней! Банковская карта не требуется.';
+    }
+    if (s.includes('crm') || s.includes('интеграц') || s.includes('данны')) {
+      return 'NeuroFlow легко интегрируется с вашей CRM, сервисами аналитики, службой поддержки и платежными системами.';
+    }
+    if (s.includes('контакт') || s.includes('поддержка') || s.includes('связаться')) {
+      return 'Вы можете оставить заявку через форму внизу страницы или написать нам на почту поддержки!';
+    }
+    return 'Спасибо за вопрос! Вы можете опробовать все функции NeuroFlow бесплатно, зарегистрировавшись прямо сейчас, или оставить заявку на консультацию через форму на сайте.';
+  }
 })();

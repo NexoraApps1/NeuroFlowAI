@@ -20,6 +20,7 @@
       <a class="navlink" href="#reviews">Отзывы</a>
       <a class="navlink" href="#faq">FAQ</a>
       <a class="navlink" href="#contact">Контакты</a>
+      <button class="navbtn ghost" id="navChatBtn" style="cursor:pointer">💬 Чат-бот</button>
       <div class="navbox" id="authBox">
         <a class="navbtn ghost" href="signin.html">Войти</a>
         <a class="navbtn" href="register.html">Зарегистрироваться</a>
@@ -34,7 +35,10 @@
     <p>
       Автоматизируйте рабочие процессы, анализируйте поведение клиентов и увеличивайте доходы с помощью одной интеллектуальной платформы.
     </p>
-    <a href="signin.html">Начать бесплатную пробную версию</a>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+      <a href="signin.html">Начать бесплатную пробную версию</a>
+      <button class="navbtn ghost" id="heroChatBtn" style="padding:18px 30px; border-radius:999px; font-weight:bold; cursor:pointer;">Задать вопрос ИИ</button>
+    </div>
   </div>
 
   <div class="dashboard reveal">
@@ -137,6 +141,23 @@
     <p id="lNote"></p>
   </form>
 </section>
+
+<!-- Виджет Чат-бота -->
+<button class="chat-btn" id="openChatBtn">💬 Чат с ИИ</button>
+
+<div class="chat-box" id="chatBox">
+  <div class="chat-head">
+    <span>🤖 NeuroFlow Assistant</span>
+    <span class="chat-x" id="closeChatBtn">✕</span>
+  </div>
+  <div class="chat-msgs" id="chatMsgs">
+    <div class="cm bot">Здравствуйте! Я ИИ-ассистент NeuroFlow. Чем могу вам помочь?</div>
+  </div>
+  <form class="chat-form" id="chatForm">
+    <input type="text" id="chatInput" placeholder="Напишите сообщение..." required autocomplete="off">
+    <button type="submit">➤</button>
+  </form>
+</div>
 
 <script src="script.js"></script>
 <script src="ui.js"></script>
