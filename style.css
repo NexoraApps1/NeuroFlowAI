@@ -320,3 +320,93 @@ button{
 .navbox{display:flex;gap:10px;align-items:center}
 .navbtn.ghost{background:transparent;border:1px solid rgba(255,255,255,.25)}
 @media(max-width:600px){nav{padding:10px 16px}.navbtn{padding:8px 12px;font-size:13px}}
+
+/* ================= UPGRADE: анимации и эффекты ================= */
+::selection{background:#6366f1;color:#fff}
+html{scroll-behavior:smooth}
+::-webkit-scrollbar{width:10px}::-webkit-scrollbar-track{background:#070b17}
+::-webkit-scrollbar-thumb{background:linear-gradient(#6366f1,#06b6d4);border-radius:10px}
+
+/* сетка на фоне */
+body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:54px 54px;-webkit-mask-image:radial-gradient(ellipse at center,#000 30%,transparent 75%);mask-image:radial-gradient(ellipse at center,#000 30%,transparent 75%)}
+#glow{position:fixed;width:520px;height:520px;border-radius:50%;pointer-events:none;z-index:-1;
+  background:radial-gradient(circle,rgba(99,102,241,.16),transparent 62%);transform:translate(-50%,-50%);left:-999px;top:-999px}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:3000;background:linear-gradient(90deg,#6366f1,#06b6d4);box-shadow:0 0 12px #6366f1}
+
+/* шапка */
+nav{transition:.35s}
+nav.scrolled{background:rgba(7,11,23,.72);border-bottom:1px solid rgba(255,255,255,.08);padding-top:6px;padding-bottom:6px}
+nav h2 a{cursor:pointer;background:linear-gradient(90deg,#fff,#a5b4fc,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* кнопки */
+button,.navbtn,.left a{position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s,background .25s}
+button:hover,.navbtn:hover{transform:translateY(-2px)}
+button:active,.navbtn:active{transform:translateY(0) scale(.97)}
+.navbtn:not(.ghost),.left a,.register-card button,.contact button,.go,.small{background:linear-gradient(135deg,#6366f1,#4f46e5)}
+.navbtn:hover:not(.ghost),.left a:hover,.register-card button:hover,.contact button:hover,.go:hover,.small:hover{box-shadow:0 8px 28px rgba(99,102,241,.55)}
+.navbtn.ghost:hover{background:rgba(255,255,255,.08)}
+.left a{box-shadow:0 0 0 0 rgba(99,102,241,.6);animation:pulse 2.6s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 18px rgba(99,102,241,0)}100%{box-shadow:0 0 0 0 rgba(99,102,241,0)}}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);transform:scale(0);animation:rip .6s ease-out;pointer-events:none}
+@keyframes rip{to{transform:scale(2.6);opacity:0}}
+
+/* заголовок */
+.left h1{background:linear-gradient(90deg,#fff 0%,#a5b4fc 30%,#22d3ee 55%,#fff 80%);background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 9s linear infinite}
+@keyframes shine{to{background-position:-300% 0}}
+.left p{animation:rise .9s .15s both}
+
+/* карточка-дашборд */
+.dashboard.reveal{transition:opacity 1s,transform .25s ease-out;animation:bob 6s ease-in-out infinite}
+@keyframes bob{50%{translate:0 -14px}}
+.dashboard{box-shadow:0 20px 70px rgba(0,0,0,.4),0 0 60px rgba(99,102,241,.15)}
+.bar:nth-child(2){animation-delay:.12s}.bar:nth-child(3){animation-delay:.24s}.bar:nth-child(4){animation-delay:.36s}.bar:nth-child(5){animation-delay:.48s}
+.bar{transition:filter .3s}.bar:hover{filter:brightness(1.4) drop-shadow(0 0 10px #06b6d4)}
+.mini-card,.step{transition:transform .35s,background .35s,box-shadow .35s,border-color .35s}
+.mini-card:hover{transform:translateY(-6px);background:rgba(255,255,255,.08)}
+.mini-card h3{background:linear-gradient(90deg,#fff,#a5b4fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.step:hover{transform:translateX(12px);background:rgba(99,102,241,.08);box-shadow:0 10px 40px rgba(99,102,241,.15);border-left-color:#06b6d4}
+.step h2{background:linear-gradient(90deg,#fff,#c7d2fe);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* формы и карточки входа */
+.register-card{animation:rise .8s both;box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 70px rgba(99,102,241,.14)}
+@keyframes rise{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:none}}
+.register-card h1,.register-card h2{background:linear-gradient(90deg,#fff,#a5b4fc);-webkit-background-clip:text;background-clip:text;color:transparent}
+.register-card input,.contact input,.contact textarea,.tab input{transition:box-shadow .25s,background .25s}
+.register-card input:focus,.contact input:focus,.contact textarea:focus,.tab input:focus,.admin input:focus{outline:none;background:rgba(255,255,255,.1);box-shadow:0 0 0 2px #6366f1,0 0 26px rgba(99,102,241,.35)}
+.register-card input::placeholder,.contact ::placeholder{color:#64748b}
+
+/* показ пароля */
+.pw-wrap{position:relative;width:100%}
+.pw-wrap input{width:100%;padding-right:52px!important}
+.pw-wrap .eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:38px;height:38px;padding:0;
+  display:flex;align-items:center;justify-content:center;border-radius:10px;background:transparent;color:#94a3b8;box-shadow:none}
+.pw-wrap .eye:hover{color:#fff;background:rgba(255,255,255,.1);transform:translateY(-50%);box-shadow:none}
+.pw-wrap .eye:active{transform:translateY(-50%) scale(.9)}
+.pw-wrap .eye svg{transition:transform .3s}.pw-wrap .eye:hover svg{transform:scale(1.15)}
+
+/* форма заявки */
+.contact{animation:none}
+.contact h2{background:linear-gradient(90deg,#fff,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* кабинет и админка */
+.cab .glass,.admin .glass{animation:rise .7s both;transition:box-shadow .3s}
+.cab .glass:hover,.admin .glass:hover{box-shadow:0 0 50px rgba(99,102,241,.12)}
+.side button{transition:.25s}.side button:hover:not(.on){background:rgba(255,255,255,.07);transform:translateX(4px)}
+.tab.on{animation:rise .5s both}
+.stats div{transition:.3s}.stats div:hover{transform:translateY(-5px);background:rgba(255,255,255,.08)}
+tr{transition:background .2s}tr:hover td{background:rgba(255,255,255,.04)}
+.ava{box-shadow:0 0 22px rgba(99,102,241,.6)}
+
+/* уведомления и чат */
+.notification{border-left:3px solid #06b6d4;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.notification::before{content:"●";color:#4ade80;margin-right:8px;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.25}}
+.chat-btn{background:linear-gradient(135deg,#6366f1,#06b6d4);box-shadow:0 10px 30px rgba(99,102,241,.5);animation:bob2 3s ease-in-out infinite}
+@keyframes bob2{50%{translate:0 -6px}}
+.chat-btn:hover{transform:scale(1.07)}
+
+@media(max-width:900px){.hero{grid-template-columns:1fr;padding:100px 24px 40px}.left h1{font-size:44px}.story{padding:40px 24px}.step h2{font-size:28px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
