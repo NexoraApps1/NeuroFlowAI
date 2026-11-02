@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Новый пароль | NeuroFlow AI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><nav><h2><a onclick="location.href='index.html'"> NeuroFlow AI </a></h2></nav></header>
+<div class="register-page">
+  <div class="register-card">
+    <h1>Новый пароль</h1>
+    <p>Придумайте новый пароль для входа</p>
+    <form id="f">
+      <input type="password" id="p1" placeholder="Новый пароль (мин. 6 символов)" minlength="6" required>
+      <input type="password" id="p2" placeholder="Повторите пароль" minlength="6" required>
+      <button type="submit">Сохранить пароль</button>
+    </form>
+    <p id="msg" style="margin-top:16px;margin-bottom:0"></p>
+  </div>
+</div>
+<script src="ui.js"></script>
+<script type="module">
+import { supabase } from './supabase.js';
+const msg = document.getElementById('msg');
+document.getElementById('f').addEventListener('submit', async e => {
+  e.preventDefault();
+  const a = document.getElementById('p1').value;
+  if (a !== document.getElementById('p2').value) { msg.style.color = '#f87171'; msg.textContent = 'Пароли не совпадают'; return; }
+  const { error } = await supabase.auth.updateUser({ password: a });
+  if (error) { msg.style.color = '#f87171'; msg.textContent = error.message; return; }
+  msg.style.color = '#4ade80'; msg.textContent = 'Пароль изменён ✓ Перенаправляем...';
+  setTimeout(() => location.href = 'dashboard.html', 1200);
+});
+</script>
+</body>
+</html>

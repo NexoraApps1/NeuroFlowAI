@@ -23,6 +23,7 @@
     </form>
     <p id="msg" style="margin-top:16px;margin-bottom:0"></p>
 
+    <span style="margin-top:14px"><a href="#" id="forgot">Забыли пароль?</a></span>
     <span>У вас нет аккаунта? <a href="register.html">Зарегистрироваться</a></span>
   </div>
 </div>
@@ -49,6 +50,15 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   const { data: p } = await supabase.from('profiles').select('blocked').eq('id', user.id).single();
   if (p?.blocked) { await supabase.auth.signOut(); msg.style.color = '#f87171'; msg.textContent = 'Аккаунт заблокирован'; return; }
   location.href = 'dashboard.html';
+});
+
+document.getElementById('forgot').addEventListener('click', async e => {
+  e.preventDefault();
+  const em = document.getElementById('email').value.trim();
+  if (!em) { msg.style.color = '#f87171'; msg.textContent = 'Введите email в поле выше'; return; }
+  const { error } = await supabase.auth.resetPasswordForEmail(em, { redirectTo: new URL('reset.html', location.href).href });
+  msg.style.color = error ? '#f87171' : '#4ade80';
+  msg.textContent = error ? error.message : 'Письмо со ссылкой для сброса пароля отправлено ✓';
 });
 </script>
 </body>

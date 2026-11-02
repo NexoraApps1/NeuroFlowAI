@@ -36,12 +36,12 @@ if (dashboard) {
 }
 
 // fake live notifications
-/*const notifications = [
+const notifications = [
   "New signup from Astana",
   "Enterprise client upgraded plan",
   "AI assistent generated successfully",
   "New team member invited",
-]; 
+];
 
 function showNotification() {
   const note = document.createElement("div");
@@ -60,7 +60,7 @@ function showNotification() {
   }, 4000);
 }
 
-setInterval(showNotification, 5000); */
+setInterval(showNotification, 5000);
 
 /*// dark/light mode
 const toggle = document.createElement("button");
@@ -76,12 +76,3 @@ document.body.appendChild(toggle);
 });
 */
 
-// fake AI chat
-const chatBtn = document.createElement("button");
-chatBtn.innerText = "AI Assistant";
-chatBtn.className = "chat-btn";
-document.body.appendChild(chatBtn);
-
-chatBtn.addEventListener("click", () => {
-  alert("Hello 👋\nHow can AI optimize your business today?");
-});
