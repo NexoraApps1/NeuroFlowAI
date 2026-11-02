@@ -1,44 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Register | NeuroFlow AI</title>
+<title>Вход | NeuroFlow AI</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <header>
-        <nav>
-          <h2><a onclick="window.location.href='index.html'"> NeuroFlow AI </a></h2>
-        </nav>
-      </header>
+<header>
+  <nav><h2><a onclick="window.location.href='index.html'"> NeuroFlow AI </a></h2></nav>
+</header>
 
 <div class="register-page">
-    <div class="register-card">
-        <h1>Войти</h1>
-        <p>Войдите в свой аккаунт чтобы продолжить роботу</p>
+  <div class="register-card">
+    <h1>Войти</h1>
+    <p>Войдите в свой аккаунт, чтобы продолжить работу</p>
 
-        <form id="registerForm">
-            <input type="text" placeholder="Full Name" required>
-            <input type="email" placeholder="Email Address" required>
-            <input type="password" placeholder="Password" required>
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Пароль" required>
+      <button type="submit" id="submitBtn">Войти</button>
+    </form>
+    <p id="msg" style="margin-top:16px;margin-bottom:0"></p>
 
-            <button type="submit">Войти</button>
-        </form>
-
-        <span>У вас нету аккаунта?  <a href="register.html">Зарегистрироваться</a></span>
-    </div>
+    <span>У вас нет аккаунта? <a href="register.html">Зарегистрироваться</a></span>
+  </div>
 </div>
 
+<script type="module">
+import { supabase } from './supabase.js';
 
-<script>
-document.getElementById("registerForm").addEventListener("submit", function(e){
-    e.preventDefault();
-    alert("Log in account successfully!");
-    window.location.href = "dashboard.html";
+const msg = document.getElementById('msg');
+const btn = document.getElementById('submitBtn');
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  btn.disabled = true; msg.style.color = '#94a3b8'; msg.textContent = 'Входим...';
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: email.value.trim(), password: password.value
+  });
+
+  btn.disabled = false;
+  if (error) { msg.style.color = '#f87171'; msg.textContent = error.message; return; }
+  location.href = 'dashboard.html';
 });
 </script>
-
 </body>
 </html>

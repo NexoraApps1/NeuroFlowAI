@@ -1,80 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | NeuroFlow AI</title>
 <link rel="stylesheet" href="style.css">
 </head>
-<body style="padding:60px;">
+<body>
 <div class="register-page">
-    <div class="register-card">
-        <h2>Добро пожаловать в панель управления NeuroFlow 🚀</h2>
-        <br>
-        <p>Ваше рабочее пространство для ИИ готово.</p>
-        <button onclick="window.location.href='index.html'">Вернуться на гланую страницу</button>
+  <div class="register-card">
+    <h2 id="title">Загрузка...</h2>
+    <br>
+    <p>Ваше рабочее пространство для ИИ готово.</p>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button id="adminBtn" style="display:none" onclick="location.href='admin.html'">Админ-панель</button>
+      <button onclick="location.href='index.html'">На главную</button>
+      <button id="logoutBtn">Выйти</button>
     </div>
+  </div>
 </div>
+
+<script type="module">
+import { supabase, getSession } from './supabase.js';
+
+const s = await getSession();
+if (!s) { location.href = 'signin.html'; }
+else {
+  const name = s.profile?.full_name || s.user.email;
+  document.getElementById('title').textContent = `Добро пожаловать, ${name} 🚀`;
+  if (s.profile?.role === 'admin') document.getElementById('adminBtn').style.display = 'block';
+}
+document.getElementById('logoutBtn').onclick = async () => {
+  await supabase.auth.signOut(); location.href = 'index.html';
+};
+</script>
 </body>
-<style>
-    .register-page{
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:linear-gradient(135deg,#070b17,#111827);
-}
-
-.register-card{
-    width:420px;
-    padding:40px;
-    border-radius:28px;
-    background:rgba(255,255,255,.05);
-    backdrop-filter:blur(18px);
-    border:1px solid rgba(255,255,255,.08);
-}
-
-.register-card h1{
-    font-size:42px;
-    margin-bottom:10px;
-}
-
-.register-card p{
-    color:#94a3b8;
-    margin-bottom:25px;
-}
-
-.register-card form{
-    display:flex;
-    flex-direction:column;
-    gap:16px;
-}
-
-.register-card input{
-    padding:16px;
-    border:none;
-    border-radius:14px;
-    background:rgba(255,255,255,.06);
-    color:white;
-}
-
-.register-card button{
-    padding:16px;
-    border:none;
-    border-radius:14px;
-    background:#6366f1;
-    color:white;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-.register-card span{
-    display:block;
-    margin-top:20px;
-    color:#94a3b8;
-}
-
-.register-card a{
-    color:#6366f1;
-}
-</style>
 </html>

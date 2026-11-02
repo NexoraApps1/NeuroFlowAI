@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Админ-панель | NeuroFlow AI</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .admin{max-width:1000px;margin:0 auto;padding:110px 24px 60px}
+  .admin .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .glass{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:24px;backdrop-filter:blur(18px);margin-top:24px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px}
+  .stats h3{font-size:34px}.stats span{color:#94a3b8}
+  .admin input,.admin select{padding:12px;border:none;border-radius:12px;background:rgba(255,255,255,.08);color:white}
+  .admin select option{color:black}
+  .wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;margin-top:14px}
+  th,td{padding:12px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);font-size:14px}
+  th{color:#94a3b8;font-weight:normal}
+  .small{padding:10px 18px;background:#6366f1;color:white}
+  #login{max-width:420px;margin:0 auto}
+  #login input{width:100%;margin-bottom:12px}
+</style>
+</head>
+<body>
+<header><nav><h2><a onclick="location.href='index.html'"> NeuroFlow AI </a></h2></nav></header>
+
+<div class="admin">
+  <div id="login" class="glass">
+    <h2>Вход в админ-панель</h2><br>
+    <input id="email" type="email" placeholder="Email">
+    <input id="pass" type="password" placeholder="Пароль">
+    <button id="loginBtn" class="small" style="width:100%">Войти</button>
+    <p id="err" style="color:#f87171;margin-top:12px"></p>
+  </div>
+
+  <div id="panel" style="display:none">
+    <div class="top"><h1>Админ-панель</h1><button id="logout" class="small">Выйти</button></div>
+
+    <div class="glass stats">
+      <div><h3 id="cTotal">0</h3><span>Всего пользователей</span></div>
+      <div><h3 id="cAdmins">0</h3><span>Администраторов</span></div>
+      <div><h3 id="cWeek">0</h3><span>За 7 дней</span></div>
+    </div>
+
+    <div class="glass">
+      <input id="search" placeholder="Поиск по имени или email" style="width:100%;max-width:360px">
+      <div class="wrap"><table id="users"></table></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { supabase, getSession } from './supabase.js';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let all = [], myId = null;
+
+async function init() {
+  const s = await getSession();
+  if (s?.profile?.role === 'admin') {
+    myId = s.user.id;
+    $('login').style.display = 'none'; $('panel').style.display = 'block';
+    load();
+  } else {
+    $('panel').style.display = 'none'; $('login').style.display = 'block';
+    if (s) $('err').textContent = 'У этого аккаунта нет прав администратора';
+  }
+}
+
+async function load() {
+  const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+  if (error) { alert(error.message); return; }
+  all = data; render();
+}
+
+function render() {
+  const q = $('search').value.toLowerCase();
+  const list = all.filter(u => (u.email || '').toLowerCase().includes(q) || (u.full_name || '').toLowerCase().includes(q));
+  $('cTotal').textContent = all.length;
+  $('cAdmins').textContent = all.filter(u => u.role === 'admin').length;
+  $('cWeek').textContent = all.filter(u => Date.now() - new Date(u.created_at) < 7 * 864e5).length;
+
+  $('users').innerHTML = '<tr><th>Дата</th><th>Имя</th><th>Email</th><th>Роль</th></tr>' +
+    list.map(u => `<tr>
+      <td>${new Date(u.created_at).toLocaleDateString('ru-RU')}</td>
+      <td>${esc(u.full_name) || '—'}</td>
+      <td>${esc(u.email)}</td>
+      <td><select data-id="${u.id}" ${u.id === myId ? 'disabled title="Свою роль менять нельзя"' : ''}>
+        <option value="user" ${u.role === 'user' ? 'selected' : ''}>user</option>
+        <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>admin</option>
+      </select></td></tr>`).join('');
+}
+
+$('users').addEventListener('change', async e => {
+  if (e.target.tagName !== 'SELECT') return;
+  const { error } = await supabase.from('profiles').update({ role: e.target.value }).eq('id', e.target.dataset.id);
+  if (error) alert(error.message);
+  load();
+});
+$('search').addEventListener('input', render);
+
+$('loginBtn').onclick = async () => {
+  const { error } = await supabase.auth.signInWithPassword({ email: $('email').value.trim(), password: $('pass').value });
+  if (error) { $('err').textContent = error.message; return; }
+  $('err').textContent = ''; init();
+};
+$('logout').onclick = async () => { await supabase.auth.signOut(); init(); };
+
+init();
+</script>
+</body>
+</html>

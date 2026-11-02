@@ -1,44 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Register | NeuroFlow AI</title>
+<title>Регистрация | NeuroFlow AI</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <header>
-        <nav>
-          <h2><a onclick="window.location.href='index.html'"> NeuroFlow AI </a></h2>
-        </nav>
-      </header>
+<header>
+  <nav><h2><a onclick="window.location.href='index.html'"> NeuroFlow AI </a></h2></nav>
+</header>
 
 <div class="register-page">
-    <div class="register-card">
-        <h1>Регистрация</h1>
-        <p>Начните 14-дневную бесплатную пробную версию</p>
+  <div class="register-card">
+    <h1>Регистрация</h1>
+    <p>Начните 14-дневную бесплатную пробную версию</p>
 
-        <form id="registerForm">
-            <input type="text" placeholder="Full Name" required>
-            <input type="email" placeholder="Email Address" required>
-            <input type="password" placeholder="Password" required>
+    <form id="registerForm">
+      <input type="text" id="name" placeholder="Имя" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Пароль (мин. 6 символов)" minlength="6" required>
+      <button type="submit" id="submitBtn">Зарегистрироваться</button>
+    </form>
+    <p id="msg" style="margin-top:16px;margin-bottom:0"></p>
 
-            <button type="submit">Зарегистрироваться</button>
-        </form>
-
-        <span>У вас уже есть аккаунт?  <a href="login.html">Войти</a></span>
-    </div>
+    <span>У вас уже есть аккаунт? <a href="signin.html">Войти</a></span>
+  </div>
 </div>
 
+<script type="module">
+import { supabase } from './supabase.js';
 
-<script>
-document.getElementById("registerForm").addEventListener("submit", function(e){
-    e.preventDefault();
-    alert("Account created successfully!");
-    window.location.href = "dashboard.html";
+const msg = document.getElementById('msg');
+const btn = document.getElementById('submitBtn');
+
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  btn.disabled = true; msg.style.color = '#94a3b8'; msg.textContent = 'Создаём аккаунт...';
+
+  const { data, error } = await supabase.auth.signUp({
+    email: email.value.trim(),
+    password: password.value,
+    options: { data: { full_name: name.value.trim() } }
+  });
+
+  btn.disabled = false;
+  if (error) { msg.style.color = '#f87171'; msg.textContent = error.message; return; }
+
+  if (data.session) { location.href = 'dashboard.html'; }   // подтверждение почты выключено
+  else { msg.style.color = '#4ade80'; msg.textContent = 'Готово! Проверьте почту и подтвердите email, затем войдите.'; }
 });
 </script>
-
 </body>
 </html>
