@@ -19,6 +19,12 @@
   th,td{padding:12px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);font-size:14px}
   th{color:#94a3b8;font-weight:normal}
   .small{padding:10px 18px;background:#6366f1;color:white}
+  .bar-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .mchart{display:flex;align-items:stretch;gap:6px;height:170px;margin-top:16px}
+  .mchart>div{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;font-size:11px;color:#94a3b8}
+  .mchart .bw{flex:1;width:100%;min-height:0;display:flex;align-items:flex-end;margin:4px 0}
+  .mchart i{display:block;width:100%;min-height:2px;background:linear-gradient(180deg,#06b6d4,#6366f1);border-radius:6px 6px 0 0}
+  .mchart b,.mchart em{font-style:normal;font-weight:normal}
   #login{max-width:420px;margin:0 auto}
   #login input{width:100%;margin-bottom:12px}
 </style>
@@ -44,15 +50,21 @@
       <div><h3 id="cWeek">0</h3><span>За 7 дней</span></div>
     </div>
 
+    <div class="glass"><h3>Регистрации за 14 дней</h3><div class="mchart" id="chart"></div></div>
+
     <div class="glass" style="display:flex;gap:10px;padding:14px">
       <button class="small tabb" data-t="usersBox">Пользователи</button>
       <button class="small tabb" data-t="leadsBox" style="background:rgba(255,255,255,.1)">Заявки <span id="cLeads"></span></button>
     </div>
     <div class="glass box" id="usersBox">
-      <input id="search" placeholder="Поиск по имени или email" style="width:100%;max-width:360px">
+      <div class="bar-row">
+        <input id="search" placeholder="Поиск по имени или email" style="width:100%;max-width:360px">
+        <button class="small" id="expUsers">⬇ Экспорт CSV</button>
+      </div>
       <div class="wrap"><table id="users"></table></div>
     </div>
     <div class="glass box" id="leadsBox" style="display:none">
+      <button class="small" id="expLeads">⬇ Экспорт CSV</button>
       <div class="wrap"><table id="leads"></table></div>
     </div>
   </div>
@@ -64,7 +76,7 @@ import { supabase, getSession } from './supabase.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let all = [], myId = null;
+let all = [], shown = [], leadsData = [], myId = null;
 
 async function init() {
   const s = await getSession();
@@ -90,6 +102,7 @@ function render() {
   $('cTotal').textContent = all.length;
   $('cAdmins').textContent = all.filter(u => u.role === 'admin').length;
   $('cWeek').textContent = all.filter(u => Date.now() - new Date(u.created_at) < 7 * 864e5).length;
+  shown = list; drawChart();
 
   $('users').innerHTML = '<tr><th>Дата</th><th>Имя</th><th>Email</th><th>Роль</th><th>Доступ</th></tr>' +
     list.map(u => `<tr>
@@ -131,6 +144,7 @@ const LBL = { new: 'Новая', in_progress: 'В работе', done: 'Гото
 async function loadLeads() {
   const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
   if (error) return;
+  leadsData = data;
   const fresh = data.filter(l => l.status === 'new').length;
   $('cLeads').textContent = fresh ? `(${fresh} новых)` : '';
   $('leads').innerHTML = '<tr><th>Дата</th><th>Имя</th><th>Email</th><th>Сообщение</th><th>Статус</th><th></th></tr>' +
@@ -157,6 +171,26 @@ document.querySelectorAll('.tabb').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabb').forEach(x => x.style.background = 'rgba(255,255,255,.1)');
   b.style.background = '#6366f1';
 });
+
+function drawChart() {
+  const days = [...Array(14)].map((_, i) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - 13 + i); return d; });
+  const cnt = days.map(d => all.filter(u => new Date(u.created_at).toDateString() === d.toDateString()).length);
+  const mx = Math.max(1, ...cnt);
+  $('chart').innerHTML = days.map((d, i) =>
+    `<div title="${d.toLocaleDateString('ru-RU')}: ${cnt[i]}"><b>${cnt[i]}</b><span class="bw"><i style="height:${cnt[i] / mx * 100}%"></i></span><em>${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}</em></div>`).join('');
+}
+
+// экспорт в CSV (разделитель ; и BOM — корректно открывается в Excel)
+function exportCSV(rows, cols, name) {
+  const cell = v => { let s = String(v ?? ''); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+  const lines = [cols.map(c => cell(c[1])).join(';'), ...rows.map(r => cols.map(c => cell(r[c[0]])).join(';'))];
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+  a.download = `${name}_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+$('expUsers').onclick = () => exportCSV(shown, [['created_at', 'Дата'], ['full_name', 'Имя'], ['email', 'Email'], ['role', 'Роль'], ['blocked', 'Заблокирован']], 'users');
+$('expLeads').onclick = () => exportCSV(leadsData, [['created_at', 'Дата'], ['name', 'Имя'], ['email', 'Email'], ['message', 'Сообщение'], ['status', 'Статус']], 'leads');
 
 init();
 </script>

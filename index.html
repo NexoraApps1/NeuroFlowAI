@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -14,9 +14,16 @@
 <header>
   <nav>
     <h2><a onclick="window.location.href='index.html'"> NeuroFlow AI </a></h2>
-    <div class="navbox" id="authBox">
-      <a class="navbtn ghost" href="signin.html">Войти</a>
-      <a class="navbtn" href="register.html">Зарегистрироваться</a>
+    <button class="burger" id="burger" aria-label="Меню" aria-expanded="false">☰</button>
+    <div class="navbox" id="navbox">
+      <a class="navlink" href="#pricing">Тарифы</a>
+      <a class="navlink" href="#reviews">Отзывы</a>
+      <a class="navlink" href="#faq">FAQ</a>
+      <a class="navlink" href="#contact">Контакты</a>
+      <div class="navbox" id="authBox">
+        <a class="navbtn ghost" href="signin.html">Войти</a>
+        <a class="navbtn" href="register.html">Зарегистрироваться</a>
+      </div>
     </div>
   </nav>
 </header>
@@ -73,6 +80,52 @@
   </div>
 </section>
 
+<section class="sec reveal" id="pricing">
+  <h2>Тарифы</h2>
+  <p class="sub">Начните бесплатно, переходите на платный тариф по мере роста.</p>
+  <div class="cards">
+    <div class="pcard">
+      <h3>Старт</h3>
+      <div class="price">0 ₸<small> / 14 дней</small></div>
+      <ul><li>1 пользователь</li><li>Базовая аналитика</li><li>Подключение 2 источников данных</li></ul>
+      <a class="navbtn ghost" href="register.html">Попробовать</a>
+    </div>
+    <div class="pcard hot">
+      <span class="tag">Популярный</span>
+      <h3>Бизнес</h3>
+      <div class="price">29 000 ₸<small> / мес</small></div>
+      <ul><li>До 10 пользователей</li><li>Прогноз оттока и выручки</li><li>Автоматизация процессов</li><li>Приоритетная поддержка</li></ul>
+      <a class="navbtn" href="register.html">Выбрать</a>
+    </div>
+    <div class="pcard">
+      <h3>Корпоративный</h3>
+      <div class="price">По запросу</div>
+      <ul><li>Без ограничений по людям</li><li>Свои модели и интеграции</li><li>Персональный менеджер</li></ul>
+      <a class="navbtn ghost" href="#contact">Связаться</a>
+    </div>
+  </div>
+</section>
+
+<section class="sec reveal" id="reviews">
+  <h2>Отзывы клиентов</h2>
+  <div class="cards">
+    <div class="rcard"><p>«За месяц сократили ручную работу отдела продаж почти вдвое. Прогноз оттока реально работает.»</p><b>Алия К.</b><small>Директор по продажам</small></div>
+    <div class="rcard"><p>«Подключили CRM и платежи за один день. Дашборд наконец показывает всю картину в одном месте.»</p><b>Данияр С.</b><small>Основатель e-commerce</small></div>
+    <div class="rcard"><p>«Автоматизация рассылок окупилась в первый же квартал. Команда поддержки отвечает быстро.»</p><b>Марина Т.</b><small>Руководитель маркетинга</small></div>
+  </div>
+</section>
+
+<section class="sec reveal" id="faq">
+  <h2>Частые вопросы</h2>
+  <div class="faq">
+    <details><summary>Нужна ли банковская карта для пробной версии?</summary><p>Нет. 14 дней бесплатного периода доступны сразу после регистрации.</p></details>
+    <details><summary>Какие источники данных можно подключить?</summary><p>CRM, службу поддержки, системы аналитики и платёжные системы.</p></details>
+    <details><summary>Безопасны ли мои данные?</summary><p>Данные передаются по защищённому соединению и доступны только вашей команде.</p></details>
+    <details><summary>Можно ли сменить тариф или отказаться?</summary><p>Да, тариф можно изменить в любой момент, а аккаунт удалить в личном кабинете.</p></details>
+    <details><summary>Как связаться с поддержкой?</summary><p>Оставьте заявку внизу страницы — мы ответим на ваш email.</p></details>
+  </div>
+</section>
+
 <section class="contact reveal" id="contact">
   <h2>Оставить заявку</h2>
   <p>Расскажите о вашей задаче, и мы свяжемся с вами.</p>
@@ -90,6 +143,11 @@
 <script type="module">
 import { supabase } from './supabase.js';
 const $ = id => document.getElementById(id);
+
+// бургер-меню
+const burger = $('burger'), navbox = $('navbox');
+burger.onclick = () => { const o = navbox.classList.toggle('open'); burger.textContent = o ? '✕' : '☰'; burger.setAttribute('aria-expanded', o); };
+navbox.addEventListener('click', e => { if (e.target.closest('a')) { navbox.classList.remove('open'); burger.textContent = '☰'; } });
 
 // кнопка входа / кабинета
 const { data: { session } } = await supabase.auth.getSession();

@@ -21,6 +21,8 @@
       <input type="password" id="password" placeholder="Пароль" required>
       <button type="submit" id="submitBtn">Войти</button>
     </form>
+    <div class="or"><span>или</span></div>
+    <button type="button" class="gbtn" id="google"><b style="color:#4285f4;font-size:18px">G</b> Войти через Google</button>
     <p id="msg" style="margin-top:16px;margin-bottom:0"></p>
 
     <span style="margin-top:14px"><a href="#" id="forgot">Забыли пароль?</a></span>
@@ -34,6 +36,10 @@ import { supabase } from './supabase.js';
 
 const msg = document.getElementById('msg');
 const btn = document.getElementById('submitBtn');
+document.getElementById('google').onclick = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: new URL('dashboard.html', location.href).href } });
+  if (error) { msg.style.color = '#f87171'; msg.textContent = error.message; }
+};
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
