@@ -13,5 +13,6 @@ export async function getSession() {
   const { data: profile } = await supabase
     .from('profiles').select('*').eq('id', user.id).single();
   if (profile?.blocked) { await supabase.auth.signOut(); return null; }
+  if (profile?.blocked) { await supabase.auth.signOut(); return null; }
   return { user, profile };
 }
