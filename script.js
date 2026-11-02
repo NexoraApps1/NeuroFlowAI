@@ -36,12 +36,12 @@ if (dashboard) {
 }
 
 // fake live notifications
-const notifications = [
+/*const notifications = [
   "New signup from Astana",
   "Enterprise client upgraded plan",
   "AI assistent generated successfully",
   "New team member invited",
-];
+]; */
 
 function showNotification() {
   const note = document.createElement("div");
