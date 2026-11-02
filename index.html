@@ -14,6 +14,7 @@
 <header>
   <nav>
     <h2><a onclick="window.location.href='index.html'"> NeuroFlow AI </a></h2>
+    <a id="authLink" class="navbtn" href="signin.html">Войти</a>
   </nav>
 </header>
 
@@ -45,7 +46,7 @@
         <span>Рост</span>
       </div>
       <div class="mini-card">
-        <h3>12.4k</h3>
+        <h3 id="userCount">12.4k</h3>
         <span>Пользователи</span>
       </div>
     </div>
@@ -69,6 +70,42 @@
   </div>
 </section>
 
+<section class="contact reveal" id="contact">
+  <h2>Оставить заявку</h2>
+  <p>Расскажите о вашей задаче, и мы свяжемся с вами.</p>
+  <form id="leadForm">
+    <input id="lName" placeholder="Имя" required maxlength="100">
+    <input id="lEmail" type="email" placeholder="Email" required maxlength="200">
+    <textarea id="lMsg" placeholder="Сообщение" required maxlength="2000" rows="4"></textarea>
+    <button type="submit">Отправить</button>
+    <p id="lNote"></p>
+  </form>
+</section>
+
 <script src="script.js"></script>
+<script type="module">
+import { supabase } from './supabase.js';
+const $ = id => document.getElementById(id);
+
+// кнопка входа / кабинета
+const { data: { session } } = await supabase.auth.getSession();
+if (session) { $('authLink').textContent = 'Личный кабинет'; $('authLink').href = 'dashboard.html'; }
+
+// реальное число пользователей
+const { data: cnt } = await supabase.rpc('public_user_count');
+if (cnt != null) $('userCount').textContent = cnt;
+
+// форма заявки
+$('leadForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const n = $('lNote'); n.style.color = '#94a3b8'; n.textContent = 'Отправляем...';
+  const { error } = await supabase.from('leads').insert({
+    name: $('lName').value.trim(), email: $('lEmail').value.trim(), message: $('lMsg').value.trim()
+  });
+  if (error) { n.style.color = '#f87171'; n.textContent = 'Ошибка: ' + error.message; return; }
+  n.style.color = '#4ade80'; n.textContent = 'Спасибо! Заявка отправлена ✓';
+  e.target.reset();
+});
+</script>
 </body>
 </html>

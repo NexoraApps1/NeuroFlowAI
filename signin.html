@@ -44,6 +44,9 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
   btn.disabled = false;
   if (error) { msg.style.color = '#f87171'; msg.textContent = error.message; return; }
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: p } = await supabase.from('profiles').select('blocked').eq('id', user.id).single();
+  if (p?.blocked) { await supabase.auth.signOut(); msg.style.color = '#f87171'; msg.textContent = 'Аккаунт заблокирован'; return; }
   location.href = 'dashboard.html';
 });
 </script>

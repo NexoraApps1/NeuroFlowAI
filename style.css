@@ -305,3 +305,14 @@ button{
 .register-card a{
     color:#6366f1;
 }
+
+/* кнопка входа в шапке */
+.navbtn{padding:10px 20px;background:#6366f1;color:white;border-radius:999px;text-decoration:none;font-weight:bold}
+
+/* форма заявки */
+.contact{max-width:640px;margin:0 auto;padding:40px 24px 120px}
+.contact h2{font-size:42px;margin-bottom:10px}
+.contact p{color:#94a3b8;margin-bottom:20px}
+.contact form{display:flex;flex-direction:column;gap:14px}
+.contact input,.contact textarea{padding:16px;border:none;border-radius:14px;background:rgba(255,255,255,.06);color:white;font-size:15px}
+.contact button{background:#6366f1;color:white;border-radius:14px;padding:16px}

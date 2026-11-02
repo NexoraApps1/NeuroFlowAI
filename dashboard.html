@@ -62,6 +62,10 @@
       <label>Повторите пароль</label><input id="pass2" type="password">
       <button class="go" id="savePass">Сменить пароль</button>
       <p class="note" id="sNote"></p>
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,.1);margin:28px 0">
+      <h3 style="color:#f87171">Удаление аккаунта</h3>
+      <p style="color:#94a3b8;font-size:14px;margin-top:6px">Аккаунт и все данные будут удалены без возможности восстановления.</p>
+      <button class="go" id="delAcc" style="background:#dc2626">Удалить аккаунт</button>
     </section>
 
     <section class="tab" id="admin">
@@ -142,6 +146,13 @@ if (isAdmin) {
   $('recent').innerHTML = all.slice(0, 5).map(u =>
     `<div class="row"><span>${esc(u.full_name || '—')} · ${esc(u.email)}</span><span>${new Date(u.created_at).toLocaleDateString('ru-RU')}</span></div>`).join('');
 }
+
+$('delAcc').onclick = async () => {
+  if (!confirm('Удалить аккаунт навсегда? Это нельзя отменить.')) return;
+  const { error } = await supabase.rpc('delete_my_account');
+  if (error) return say($('sNote'), error.message, false);
+  await supabase.auth.signOut(); alert('Аккаунт удалён'); location.href = 'index.html';
+};
 
 $('logoutBtn').onclick = async () => { await supabase.auth.signOut(); location.href = 'index.html'; };
 </script>

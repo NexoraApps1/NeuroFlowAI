@@ -44,9 +44,16 @@
       <div><h3 id="cWeek">0</h3><span>За 7 дней</span></div>
     </div>
 
-    <div class="glass">
+    <div class="glass" style="display:flex;gap:10px;padding:14px">
+      <button class="small tabb" data-t="usersBox">Пользователи</button>
+      <button class="small tabb" data-t="leadsBox" style="background:rgba(255,255,255,.1)">Заявки <span id="cLeads"></span></button>
+    </div>
+    <div class="glass box" id="usersBox">
       <input id="search" placeholder="Поиск по имени или email" style="width:100%;max-width:360px">
       <div class="wrap"><table id="users"></table></div>
+    </div>
+    <div class="glass box" id="leadsBox" style="display:none">
+      <div class="wrap"><table id="leads"></table></div>
     </div>
   </div>
 </div>
@@ -73,7 +80,7 @@ async function init() {
 async function load() {
   const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
   if (error) { alert(error.message); return; }
-  all = data; render();
+  all = data; render(); loadLeads();
 }
 
 function render() {
@@ -83,15 +90,16 @@ function render() {
   $('cAdmins').textContent = all.filter(u => u.role === 'admin').length;
   $('cWeek').textContent = all.filter(u => Date.now() - new Date(u.created_at) < 7 * 864e5).length;
 
-  $('users').innerHTML = '<tr><th>Дата</th><th>Имя</th><th>Email</th><th>Роль</th></tr>' +
+  $('users').innerHTML = '<tr><th>Дата</th><th>Имя</th><th>Email</th><th>Роль</th><th>Доступ</th></tr>' +
     list.map(u => `<tr>
       <td>${new Date(u.created_at).toLocaleDateString('ru-RU')}</td>
       <td>${esc(u.full_name) || '—'}</td>
       <td>${esc(u.email)}</td>
-      <td><select data-id="${u.id}" ${u.id === myId ? 'disabled title="Свою роль менять нельзя"' : ''}>
+      <td><select data-id="${u.id}" ${u.id === myId ? 'disabled' : ''}>
         <option value="user" ${u.role === 'user' ? 'selected' : ''}>user</option>
         <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>admin</option>
-      </select></td></tr>`).join('');
+      </select></td>
+      <td>${u.id === myId ? '—' : `<button class="small" data-block="${u.id}" data-val="${!u.blocked}" style="background:${u.blocked ? '#16a34a' : '#dc2626'}">${u.blocked ? 'Разблокировать' : 'Заблокировать'}</button>`}</td></tr>`).join('');
 }
 
 $('users').addEventListener('change', async e => {
@@ -108,6 +116,46 @@ $('loginBtn').onclick = async () => {
   $('err').textContent = ''; init();
 };
 $('logout').onclick = async () => { await supabase.auth.signOut(); init(); };
+
+$('users').addEventListener('click', async e => {
+  const b = e.target.closest('[data-block]'); if (!b) return;
+  const block = b.dataset.val === 'true';
+  if (block && !confirm('Заблокировать пользователя?')) return;
+  const { error } = await supabase.from('profiles').update({ blocked: block }).eq('id', b.dataset.block);
+  if (error) alert(error.message);
+  load();
+});
+
+const LBL = { new: 'Новая', in_progress: 'В работе', done: 'Готово' };
+async function loadLeads() {
+  const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
+  if (error) return;
+  const fresh = data.filter(l => l.status === 'new').length;
+  $('cLeads').textContent = fresh ? `(${fresh} новых)` : '';
+  $('leads').innerHTML = '<tr><th>Дата</th><th>Имя</th><th>Email</th><th>Сообщение</th><th>Статус</th><th></th></tr>' +
+    (data.length ? data.map(l => `<tr>
+      <td>${new Date(l.created_at).toLocaleString('ru-RU')}</td>
+      <td>${esc(l.name)}</td><td>${esc(l.email)}</td><td>${esc(l.message)}</td>
+      <td><select class="st" data-id="${l.id}">${Object.keys(LBL).map(k => `<option value="${k}" ${k === l.status ? 'selected' : ''}>${LBL[k]}</option>`).join('')}</select></td>
+      <td><button class="small del" data-id="${l.id}" style="background:#dc2626">Удалить</button></td></tr>`).join('')
+      : '<tr><td colspan="6" style="color:#94a3b8">Заявок пока нет</td></tr>');
+}
+$('leads').addEventListener('change', async e => {
+  if (!e.target.classList.contains('st')) return;
+  await supabase.from('leads').update({ status: e.target.value }).eq('id', e.target.dataset.id);
+  loadLeads();
+});
+$('leads').addEventListener('click', async e => {
+  if (!e.target.classList.contains('del') || !confirm('Удалить заявку?')) return;
+  await supabase.from('leads').delete().eq('id', e.target.dataset.id);
+  loadLeads();
+});
+document.querySelectorAll('.tabb').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.box').forEach(x => x.style.display = 'none');
+  $(b.dataset.t).style.display = 'block';
+  document.querySelectorAll('.tabb').forEach(x => x.style.background = 'rgba(255,255,255,.1)');
+  b.style.background = '#6366f1';
+});
 
 init();
 </script>
