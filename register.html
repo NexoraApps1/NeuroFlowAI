@@ -38,10 +38,14 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
   e.preventDefault();
   btn.disabled = true; msg.style.color = '#94a3b8'; msg.textContent = 'Создаём аккаунт...';
 
+  const fullName = document.getElementById('name').value.trim();
+  const emailVal = document.getElementById('email').value.trim();
+  const passVal = document.getElementById('password').value;
+
   const { data, error } = await supabase.auth.signUp({
-    email: email.value.trim(),
-    password: password.value,
-    options: { data: { full_name: name.value.trim() } }
+    email: emailVal,
+    password: passVal,
+    options: { data: { full_name: fullName } }
   });
 
   btn.disabled = false;

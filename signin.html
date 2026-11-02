@@ -38,7 +38,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   btn.disabled = true; msg.style.color = '#94a3b8'; msg.textContent = 'Входим...';
 
   const { error } = await supabase.auth.signInWithPassword({
-    email: email.value.trim(), password: password.value
+    email: document.getElementById('email').value.trim(),
+    password: document.getElementById('password').value
   });
 
   btn.disabled = false;
