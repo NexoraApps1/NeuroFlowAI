@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NeuroFlow AI</title>
+<link rel="icon" href="logo-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -13,14 +14,13 @@
 
 <header>
   <nav>
-    <h2><a onclick="window.location.href='index.html'"> NeuroFlow AI </a></h2>
+    <a class="logo" href="index.html"><img src="logo.svg" alt="NeuroFlow AI"></a>
     <button class="burger" id="burger" aria-label="Меню" aria-expanded="false">☰</button>
     <div class="navbox" id="navbox">
       <a class="navlink" href="#pricing">Тарифы</a>
       <a class="navlink" href="#reviews">Отзывы</a>
       <a class="navlink" href="#faq">FAQ</a>
       <a class="navlink" href="#contact">Контакты</a>
-      <button class="navbtn ghost" id="navChatBtn" style="cursor:pointer">💬 Чат-бот</button>
       <div class="navbox" id="authBox">
         <a class="navbtn ghost" href="signin.html">Войти</a>
         <a class="navbtn" href="register.html">Зарегистрироваться</a>
@@ -35,10 +35,7 @@
     <p>
       Автоматизируйте рабочие процессы, анализируйте поведение клиентов и увеличивайте доходы с помощью одной интеллектуальной платформы.
     </p>
-    <div style="display:flex; gap:12px; flex-wrap:wrap;">
-      <a href="signin.html">Начать бесплатную пробную версию</a>
-      <button class="navbtn ghost" id="heroChatBtn" style="padding:18px 30px; border-radius:999px; font-weight:bold; cursor:pointer;">Задать вопрос ИИ</button>
-    </div>
+    <a href="signin.html">Начать бесплатную пробную версию</a>
   </div>
 
   <div class="dashboard reveal">
@@ -60,7 +57,7 @@
         <span>Рост</span>
       </div>
       <div class="mini-card">
-        <h3 id="userCount">0</h3>
+        <h3 id="userCount">12.4k</h3>
         <span>Пользователи</span>
       </div>
     </div>
@@ -141,32 +138,6 @@
     <p id="lNote"></p>
   </form>
 </section>
-
-<div class="chat-box" id="chatBox">
-  <div class="chat-head">
-    <span>🤖 NeuroFlow Assistant</span>
-    <span class="chat-x" id="closeChatBtn">✕</span>
-  </div>
-  <div class="chat-msgs" id="chatMsgs">
-    <div class="cm bot">Здравствуйте! Я ИИ-ассистент NeuroFlow. Чем могу вам помочь?</div>
-  </div>
-  <form class="chat-form" id="chatForm">
-    <input type="text" id="chatInput" placeholder="Напишите сообщение..." required autocomplete="off">
-    <button type="submit">➤</button>
-  </form>
-</div>
-
-<footer>
-  <div class="footer-content">
-    <p>© 2026 NeuroFlow AI. Все права защищены.</p>
-    <div class="footer-links">
-      <a href="#pricing">Тарифы</a>
-      <a href="#reviews">Отзывы</a>
-      <a href="#faq">FAQ</a>
-      <a href="#contact">Контакты</a>
-    </div>
-  </div>
-</footer>
 
 <script src="script.js"></script>
 <script src="ui.js"></script>

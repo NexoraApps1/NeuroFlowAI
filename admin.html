@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>Админ-панель | NeuroFlow AI</title>
+<link rel="icon" href="logo-icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 <style>
   .admin{max-width:1000px;margin:0 auto;padding:110px 24px 60px}
@@ -30,7 +31,7 @@
 </style>
 </head>
 <body>
-<header><nav><h2><a onclick="location.href='index.html'"> NeuroFlow AI </a></h2></nav></header>
+<header><nav><a class="logo" href="index.html"><img src="logo.svg" alt="NeuroFlow AI"></a></nav></header>
 
 <div class="admin">
   <div id="login" class="glass">
@@ -69,17 +70,6 @@
     </div>
   </div>
 </div>
-
-<footer>
-  <div class="footer-content">
-    <p>© 2026 NeuroFlow AI. Все права защищены.</p>
-    <div class="footer-links">
-      <a href="index.html">Главная</a>
-      <a href="index.html#pricing">Тарифы</a>
-      <a href="index.html#contact">Контакты</a>
-    </div>
-  </div>
-</footer>
 
 <script src="ui.js"></script>
 <script type="module">
@@ -193,11 +183,10 @@ function drawChart() {
 
 // экспорт в CSV (разделитель ; и BOM — корректно открывается в Excel)
 function exportCSV(rows, cols, name) {
-  const cell = v => { let s = String(v ?? ''); if (/^[=+\-@	]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+  const cell = v => { let s = String(v ?? ''); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
   const lines = [cols.map(c => cell(c[1])).join(';'), ...rows.map(r => cols.map(c => cell(r[c[0]])).join(';'))];
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('
-')], { type: 'text/csv;charset=utf-8' }));
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
   a.download = `${name}_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }

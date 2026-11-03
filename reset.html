@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Новый пароль | NeuroFlow AI</title>
+<link rel="icon" href="logo-icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header><nav><h2><a onclick="location.href='index.html'"> NeuroFlow AI </a></h2></nav></header>
+<header><nav><a class="logo" href="index.html"><img src="logo.svg" alt="NeuroFlow AI"></a></nav></header>
 <div class="register-page">
   <div class="register-card">
     <h1>Новый пароль</h1>
@@ -20,18 +21,6 @@
     <p id="msg" style="margin-top:16px;margin-bottom:0"></p>
   </div>
 </div>
-
-<footer>
-  <div class="footer-content">
-    <p>© 2026 NeuroFlow AI. Все права защищены.</p>
-    <div class="footer-links">
-      <a href="index.html">Главная</a>
-      <a href="index.html#pricing">Тарифы</a>
-      <a href="index.html#contact">Контакты</a>
-    </div>
-  </div>
-</footer>
-
 <script src="ui.js"></script>
 <script type="module">
 import { supabase } from './supabase.js';
