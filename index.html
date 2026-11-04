@@ -83,27 +83,32 @@
 
 <section class="sec reveal" id="pricing">
   <h2>Тарифы</h2>
-  <p class="sub">Начните бесплатно, переходите на платный тариф по мере роста.</p>
+  <p class="sub">Пробный период начинается после привязки карты. Платный тариф — по желанию.</p>
   <div class="cards">
-    <div class="pcard">
+    <div class="pcard" data-plan="start">
       <h3>Старт</h3>
       <div class="price">0 ₸<small> / 14 дней</small></div>
       <ul><li>1 пользователь</li><li>Базовая аналитика</li><li>Подключение 2 источников данных</li></ul>
       <a class="navbtn ghost" href="register.html">Попробовать</a>
     </div>
-    <div class="pcard hot">
+    <div class="pcard hot" data-plan="business">
       <span class="tag">Популярный</span>
       <h3>Бизнес</h3>
       <div class="price">29 000 ₸<small> / мес</small></div>
       <ul><li>До 10 пользователей</li><li>Прогноз оттока и выручки</li><li>Автоматизация процессов</li><li>Приоритетная поддержка</li></ul>
-      <a class="navbtn" href="checkout.html?plan=business">Выбрать</a>
+      <a class="navbtn" href="register.html">Выбрать</a>
     </div>
-    <div class="pcard">
+    <div class="pcard" data-plan="enterprise">
       <h3>Корпоративный</h3>
       <div class="price">По запросу</div>
       <ul><li>Без ограничений по людям</li><li>Свои модели и интеграции</li><li>Персональный менеджер</li></ul>
       <a class="navbtn ghost" href="#contact">Связаться</a>
     </div>
+  </div>
+  <div class="planstatus" id="planStatus" style="display:none">
+    <span id="planStatusText"></span>
+    <button id="trialBtn" style="display:none">Начать пробный период (привязать карту)</button>
+    <div class="payhist" id="payHist"></div>
   </div>
 </section>
 
@@ -139,6 +144,17 @@
   </form>
 </section>
 
+<div class="modal" id="cardModal">
+  <div class="box">
+    <h3>Привязка карты</h3>
+    <div class="demo">Демо-режим: реальные данные карты вводить не нужно, деньги не списываются. Используется тестовая карта.</div>
+    <input value="4242 4242 4242 4242" disabled aria-label="Номер тестовой карты">
+    <div class="two"><input value="12/30" disabled aria-label="Срок"><input value="123" disabled aria-label="CVC"></div>
+    <p id="cardNote" style="margin:0 0 6px;min-height:20px"></p>
+    <div class="acts"><button id="cardOk">Привязать карту</button><button class="cancel" id="cardNo">Отмена</button></div>
+  </div>
+</div>
+
 <script src="script.js"></script>
 <script src="ui.js"></script>
 <script type="module">
@@ -153,6 +169,55 @@ navbox.addEventListener('click', e => { if (e.target.closest('a')) { navbox.clas
 // кнопка входа / кабинета
 const { data: { session } } = await supabase.auth.getSession();
 if (session) $('authBox').innerHTML = '<a class="navbtn" href="dashboard.html">Личный кабинет</a>';
+
+// тарифы: для вошедшего пользователя отмечаем тариф, пробный период, оплату и историю платежей
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const PN = { start: 'Старт', business: 'Бизнес', enterprise: 'Корпоративный' };
+const keyOf = p => p === 'business' ? 'business' : p === 'enterprise' ? 'enterprise' : 'start'; // 'free' = Старт
+let prof = {};
+function renderPlan() {
+  const key = keyOf(prof.plan);
+  document.querySelectorAll('.pcard').forEach(c => {
+    const k = c.dataset.plan, mine = k === key, a = c.querySelector('.navbtn');
+    c.classList.toggle('mine', mine);
+    if (mine) {
+      let tag = c.querySelector('.tag');
+      if (!tag) { tag = document.createElement('span'); tag.className = 'tag'; c.prepend(tag); }
+      tag.textContent = 'Ваш тариф';
+    }
+    if (k === 'business') { a.textContent = mine ? 'Продлить' : 'Оплатить'; a.href = 'checkout.html?plan=business'; }
+    else if (mine) { a.textContent = 'Ваш тариф'; a.removeAttribute('href'); a.style.pointerEvents = 'none'; a.style.opacity = '.6'; }
+    else { a.textContent = 'Связаться'; a.href = '#contact'; }
+  });
+  const st = $('planStatus'), tx = $('planStatusText'), tb = $('trialBtn');
+  st.style.display = 'flex'; tb.style.display = 'none';
+  if (key !== 'start') {
+    const until = prof.plan_until ? new Date(prof.plan_until) : null;
+    tx.textContent = 'Ваш тариф: ' + PN[key] + (until ? (until > new Date() ? ' · действует до ' + until.toLocaleDateString('ru-RU') : ' · срок истёк') : '');
+    return;
+  }
+  if (!prof.trial_started_at) { tx.textContent = 'Пробный период не активирован.'; tb.style.display = 'inline-block'; return; }
+  const left = 14 - Math.floor((Date.now() - new Date(prof.trial_started_at)) / 864e5);
+  tx.textContent = left > 0 ? `Пробный период: осталось ${left} дн. · карта •••• ${prof.card_last4 || ''}` : 'Пробный период закончился.';
+}
+if (session) {
+  const r = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+  prof = r.data || {};
+  renderPlan();
+  const { data: pays } = await supabase.from('payments').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false }).limit(5);
+  if (pays?.length) $('payHist').innerHTML = '<b>История платежей</b>' + pays.map(p =>
+    `<div><span>${esc(PN[keyOf(p.plan)])} · ${Number(p.amount).toLocaleString('ru-RU')} ₸ (тест)</span><span>${new Date(p.created_at).toLocaleDateString('ru-RU')}</span></div>`).join('');
+  $('trialBtn').onclick = () => { $('cardNote').textContent = ''; $('cardModal').classList.add('on'); };
+  $('cardNo').onclick = () => $('cardModal').classList.remove('on');
+  $('cardOk').onclick = async () => {
+    const ok = $('cardOk'); ok.disabled = true;
+    const { error } = await supabase.rpc('start_demo_trial');
+    ok.disabled = false;
+    if (error) { $('cardNote').style.color = '#f87171'; $('cardNote').textContent = error.message; return; }
+    prof.trial_started_at = new Date().toISOString(); prof.card_last4 = '4242';
+    $('cardModal').classList.remove('on'); renderPlan();
+  };
+}
 
 // реальное число пользователей
 const { data: cnt } = await supabase.rpc('public_user_count');
