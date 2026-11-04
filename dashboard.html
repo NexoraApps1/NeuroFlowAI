@@ -36,6 +36,16 @@
   .plan ul{list-style:none;margin:16px 0 0;display:flex;flex-direction:column;gap:8px;color:#cbd5e1}
   .plan li::before{content:"✓";color:#4ade80;margin-right:8px}
   .trial{display:inline-block;margin-top:14px;padding:6px 14px;border-radius:999px;font-size:13px;background:rgba(255,255,255,.08);color:#a5b4fc}
+  .modal{position:fixed;inset:0;z-index:4000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(3,6,15,.75);backdrop-filter:blur(6px)}
+  .modal.on{display:flex}
+  .modal .box{width:100%;max-width:420px;padding:30px;border-radius:24px;background:#0d1222;border:1px solid rgba(255,255,255,.1);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+  .modal h3{font-size:24px;margin-bottom:8px}
+  .modal .demo{margin:12px 0 18px;padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.45;background:rgba(251,191,36,.12);color:#fcd34d}
+  .modal input{width:100%;padding:14px;margin-bottom:12px;border:none;border-radius:12px;background:rgba(255,255,255,.08);color:white;opacity:.7}
+  .modal .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .modal .acts{display:flex;gap:10px;margin-top:8px}
+  .modal .acts button{flex:1;border-radius:14px;color:white;background:linear-gradient(135deg,#6366f1,#4f46e5)}
+  .modal .acts .cancel{background:rgba(255,255,255,.1)}
   @media(max-width:760px){.cab{grid-template-columns:1fr}}
 </style>
 </head>
@@ -75,6 +85,7 @@
         <ul id="planFeat"></ul>
         <span class="trial" id="planTrial" style="display:none"></span>
       </div>
+      <button class="go" id="trialBtn" style="display:none;margin-right:10px">Начать пробный период (привязать карту)</button>
       <button class="go" id="planBtn" onclick="location.href='index.html#pricing'">Сравнить тарифы</button>
       <p class="note" style="color:#94a3b8;font-size:14px">Чтобы сменить тариф, напишите нам через форму на главной странице.</p>
     </section>
@@ -117,6 +128,17 @@
   </main>
 </div>
 
+<div class="modal" id="cardModal">
+  <div class="box">
+    <h3>Привязка карты</h3>
+    <div class="demo">Демо-режим: реальные данные карты вводить не нужно, деньги не списываются. Используется тестовая карта.</div>
+    <input value="4242 4242 4242 4242" disabled aria-label="Номер тестовой карты">
+    <div class="two"><input value="12/30" disabled aria-label="Срок"><input value="123" disabled aria-label="CVC"></div>
+    <p class="note" id="cardNote" style="margin:0 0 6px"></p>
+    <div class="acts"><button id="cardOk">Привязать карту</button><button class="cancel" id="cardNo">Отмена</button></div>
+  </div>
+</div>
+
 <script src="ui.js"></script>
 <script type="module">
 import { supabase, getSession } from './supabase.js';
@@ -153,12 +175,29 @@ const pl = PLANS[planKey];
 $('planName').textContent = pl.name;
 $('planPrice').innerHTML = pl.price + (pl.per ? `<small>${pl.per}</small>` : '');
 $('planFeat').innerHTML = pl.feat.map(f => `<li>${f}</li>`).join('');
-if (planKey === 'start') {
-  const left = 14 - Math.floor((Date.now() - new Date(profile?.created_at || user.created_at)) / 864e5);
-  const t = $('planTrial'); t.style.display = 'inline-block';
-  t.textContent = left > 0 ? `Пробный период: осталось ${left} дн.` : 'Пробный период закончился';
+function renderTrial() {
+  const t = $('planTrial'), b = $('trialBtn');
+  t.style.display = 'none'; b.style.display = 'none';
+  if (planKey !== 'start') return;
+  t.style.display = 'inline-block';
+  if (!profile?.trial_started_at) { t.textContent = 'Пробный период не активирован'; b.style.display = 'inline-block'; return; }
+  const left = 14 - Math.floor((Date.now() - new Date(profile.trial_started_at)) / 864e5);
+  t.textContent = left > 0 ? `Пробный период: осталось ${left} дн. · карта •••• ${profile.card_last4 || ''}` : 'Пробный период закончился';
 }
+renderTrial();
 if (planKey === 'enterprise') $('planBtn').style.display = 'none';
+
+// привязка карты (демо) -> пробный период
+$('trialBtn').onclick = () => { $('cardNote').textContent = ''; $('cardModal').classList.add('on'); };
+$('cardNo').onclick = () => $('cardModal').classList.remove('on');
+$('cardOk').onclick = async () => {
+  const ok = $('cardOk'); ok.disabled = true;
+  const { error } = await supabase.rpc('start_demo_trial');
+  ok.disabled = false;
+  if (error) return say($('cardNote'), error.message, false);
+  profile.trial_started_at = new Date().toISOString(); profile.card_last4 = '4242';
+  $('cardModal').classList.remove('on'); renderTrial();
+};
 
 // вкладки
 document.querySelectorAll('.side [data-tab]').forEach(b => b.onclick = () => {
