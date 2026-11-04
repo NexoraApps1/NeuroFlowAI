@@ -29,6 +29,10 @@
   .stats h3{font-size:32px}.stats span{color:#94a3b8;font-size:14px}
   .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:14px;gap:10px}
   .row span:last-child{color:#94a3b8;white-space:nowrap}
+  .trial{display:inline-block;padding:6px 14px;border-radius:999px;font-size:13px;background:rgba(255,255,255,.08);color:#a5b4fc}
+  .trialbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .trialbar .go{margin-top:0}
+  .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:20px;margin-top:26px}
   @media(max-width:760px){.cab{grid-template-columns:1fr}}
 </style>
 </head>
@@ -42,7 +46,7 @@
       <div><b id="meName">...</b><small id="meMail"></small><span class="badge" id="meRole"></span></div>
     </div>
     <button data-tab="profile" class="on">👤 Профиль</button>
-    <button onclick="location.href='index.html#pricing'">💳 Тариф</button>
+    <button data-tab="plan">💳 Тариф</button>
     <button data-tab="security">🔒 Безопасность</button>
     <button data-tab="admin" id="adminTabBtn" style="display:none">🛠 Администрирование</button>
     <button id="logoutBtn">↩ Выйти</button>
@@ -56,6 +60,22 @@
       <label>Дата регистрации</label><input id="created" disabled>
       <button class="go" id="saveProfile">Сохранить</button>
       <p class="note" id="pNote"></p>
+    </section>
+
+    <section class="tab" id="plan">
+      <h2>Тариф</h2>
+      <div class="stats">
+        <div><h3 id="planName">—</h3><span>Текущий тариф</span></div>
+        <div><h3 id="planUntil" style="font-size:24px;padding:4px 0">—</h3><span>Действует до</span></div>
+      </div>
+      <div class="trialbar">
+        <span class="trial" id="planTrial" style="display:none"></span>
+        <button class="go" id="trialBtn" style="display:none">Начать пробный период (привязать карту)</button>
+      </div>
+      <div class="plans" id="plans"></div>
+      <p style="color:#94a3b8;font-size:14px;margin-top:18px">Демо-режим: оплата тестовая, деньги не списываются.</p>
+      <h3 style="margin:22px 0 8px">История платежей</h3>
+      <div id="payList"></div>
     </section>
 
     <section class="tab" id="security">
@@ -82,6 +102,17 @@
       <button class="go" onclick="location.href='admin.html'">Открыть админ-панель →</button>
     </section>
   </main>
+</div>
+
+<div class="modal" id="cardModal">
+  <div class="box">
+    <h3>Привязка карты</h3>
+    <div class="demo">Демо-режим: реальные данные карты вводить не нужно, деньги не списываются. Используется тестовая карта.</div>
+    <input value="4242 4242 4242 4242" disabled aria-label="Номер тестовой карты">
+    <div class="two"><input value="12/30" disabled aria-label="Срок"><input value="123" disabled aria-label="CVC"></div>
+    <p id="cardNote" style="margin:0 0 6px;min-height:20px"></p>
+    <div class="acts"><button id="cardOk">Привязать карту</button><button class="cancel" id="cardNo">Отмена</button></div>
+  </div>
 </div>
 
 <script src="ui.js"></script>
@@ -149,6 +180,50 @@ if (isAdmin) {
   $('recent').innerHTML = all.slice(0, 5).map(u =>
     `<div class="row"><span>${esc(u.full_name || '—')} · ${esc(u.email)}</span><span>${new Date(u.created_at).toLocaleDateString('ru-RU')}</span></div>`).join('');
 }
+
+// тариф: планы, пробный период, оплата, история платежей
+const PLANS = {
+  start: { name: 'Старт', price: '0 ₸', per: ' / 14 дней', feat: ['1 пользователь', 'Базовая аналитика', 'Подключение 2 источников данных'] },
+  business: { name: 'Бизнес', price: '29 000 ₸', per: ' / мес', feat: ['До 10 пользователей', 'Прогноз оттока и выручки', 'Автоматизация процессов', 'Приоритетная поддержка'] },
+  enterprise: { name: 'Корпоративный', price: 'По запросу', per: '', feat: ['Без ограничений по людям', 'Свои модели и интеграции', 'Персональный менеджер'] }
+};
+const keyOf = p => p === 'business' ? 'business' : p === 'enterprise' ? 'enterprise' : 'start'; // 'free' = Старт
+const planKey = keyOf(profile?.plan);
+$('planName').textContent = PLANS[planKey].name;
+$('planUntil').textContent = profile?.plan_until ? new Date(profile.plan_until).toLocaleDateString('ru-RU') : '—';
+const planBtn = k => k === planKey && k !== 'business' ? '' :
+  k === 'business' ? `<a class="navbtn" href="checkout.html?plan=business">${k === planKey ? 'Продлить' : 'Оплатить'}</a>` :
+  k === 'enterprise' ? '<a class="navbtn ghost" href="index.html#contact">Связаться</a>' : '';
+$('plans').innerHTML = Object.entries(PLANS).map(([k, p]) =>
+  `<div class="pcard${k === planKey ? ' hot' : ''}">${k === planKey ? '<span class="tag">Ваш тариф</span>' : ''}<h3>${p.name}</h3><div class="price">${p.price}<small>${p.per}</small></div><ul>${p.feat.map(f => `<li>${f}</li>`).join('')}</ul>${planBtn(k)}</div>`).join('');
+
+function renderTrial() {
+  const t = $('planTrial'), b = $('trialBtn');
+  t.style.display = 'none'; b.style.display = 'none';
+  if (planKey !== 'start') return;
+  t.style.display = 'inline-block';
+  if (!profile?.trial_started_at) { t.textContent = 'Пробный период не активирован'; b.style.display = 'inline-block'; return; }
+  const left = 14 - Math.floor((Date.now() - new Date(profile.trial_started_at)) / 864e5);
+  t.textContent = left > 0 ? `Пробный период: осталось ${left} дн. · карта •••• ${profile.card_last4 || ''}` : 'Пробный период закончился';
+}
+renderTrial();
+$('trialBtn').onclick = () => { $('cardNote').textContent = ''; $('cardModal').classList.add('on'); };
+$('cardNo').onclick = () => $('cardModal').classList.remove('on');
+$('cardOk').onclick = async () => {
+  const ok = $('cardOk'); ok.disabled = true;
+  const { error } = await supabase.rpc('start_demo_trial');
+  ok.disabled = false;
+  if (error) return say($('cardNote'), error.message, false);
+  profile.trial_started_at = new Date().toISOString(); profile.card_last4 = '4242';
+  $('cardModal').classList.remove('on'); renderTrial();
+};
+
+const { data: pays } = await supabase.from('payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10);
+$('payList').innerHTML = pays?.length
+  ? pays.map(p => `<div class="row"><span>${esc(PLANS[keyOf(p.plan)].name)} · ${Number(p.amount).toLocaleString('ru-RU')} ₸ (тест)</span><span>${new Date(p.created_at).toLocaleDateString('ru-RU')}</span></div>`).join('')
+  : '<p style="color:#94a3b8">Платежей пока нет</p>';
+
+if (location.hash === '#plan') document.querySelector('[data-tab=plan]').click();
 
 $('delAcc').onclick = async () => {
   if (!confirm('Удалить аккаунт навсегда? Это нельзя отменить.')) return;
