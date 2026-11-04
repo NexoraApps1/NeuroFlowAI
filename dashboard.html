@@ -29,6 +29,13 @@
   .stats h3{font-size:32px}.stats span{color:#94a3b8;font-size:14px}
   .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:14px;gap:10px}
   .row span:last-child{color:#94a3b8;white-space:nowrap}
+  .plan{padding:24px;border-radius:20px;background:linear-gradient(135deg,rgba(99,102,241,.22),rgba(6,182,212,.12));border:1px solid rgba(99,102,241,.4)}
+  .plan h3{font-size:28px}
+  .plan .pr{font-size:34px;font-weight:bold;margin:10px 0 4px}
+  .plan .pr small{font-size:14px;color:#94a3b8;font-weight:normal}
+  .plan ul{list-style:none;margin:16px 0 0;display:flex;flex-direction:column;gap:8px;color:#cbd5e1}
+  .plan li::before{content:"✓";color:#4ade80;margin-right:8px}
+  .trial{display:inline-block;margin-top:14px;padding:6px 14px;border-radius:999px;font-size:13px;background:rgba(255,255,255,.08);color:#a5b4fc}
   @media(max-width:760px){.cab{grid-template-columns:1fr}}
 </style>
 </head>
@@ -42,6 +49,8 @@
       <div><b id="meName">...</b><small id="meMail"></small><span class="badge" id="meRole"></span></div>
     </div>
     <button data-tab="profile" class="on">👤 Профиль</button>
+    <button data-tab="billing">💳 Тариф</button>
+    <button data-tab="plan">💳 Тариф</button>
     <button data-tab="security">🔒 Безопасность</button>
     <button data-tab="admin" id="adminTabBtn" style="display:none">🛠 Администрирование</button>
     <button id="logoutBtn">↩ Выйти</button>
@@ -57,6 +66,19 @@
       <p class="note" id="pNote"></p>
     </section>
 
+    <section class="tab" id="plan">
+      <h2>Мой тариф</h2>
+      <div class="plan">
+        <span class="badge" id="planBadge">текущий тариф</span>
+        <h3 id="planName"></h3>
+        <div class="pr" id="planPrice"></div>
+        <ul id="planFeat"></ul>
+        <span class="trial" id="planTrial" style="display:none"></span>
+      </div>
+      <button class="go" id="planBtn" onclick="location.href='index.html#pricing'">Сравнить тарифы</button>
+      <p class="note" style="color:#94a3b8;font-size:14px">Чтобы сменить тариф, напишите нам через форму на главной странице.</p>
+    </section>
+
     <section class="tab" id="security">
       <h2>Безопасность</h2>
       <label>Новый пароль</label><input id="pass1" type="password" placeholder="Минимум 6 символов">
@@ -67,6 +89,18 @@
       <h3 style="color:#f87171">Удаление аккаунта</h3>
       <p style="color:#94a3b8;font-size:14px;margin-top:6px">Аккаунт и все данные будут удалены без возможности восстановления.</p>
       <button class="go" id="delAcc" style="background:#dc2626">Удалить аккаунт</button>
+    </section>
+
+    <section class="tab" id="billing">
+      <h2>Тариф</h2>
+      <div class="stats">
+        <div><h3 id="planName">—</h3><span>Текущий тариф</span></div>
+        <div><h3 id="planUntil" style="font-size:24px;padding:4px 0">—</h3><span>Действует до</span></div>
+      </div>
+      <p style="color:#94a3b8;font-size:14px">Демо-режим: оплата тестовая, деньги не списываются.</p>
+      <button class="go" onclick="location.href='checkout.html?plan=business'">Оплатить тариф «Бизнес»</button>
+      <h3 style="margin:26px 0 8px">История платежей</h3>
+      <div id="payList"></div>
     </section>
 
     <section class="tab" id="admin">
@@ -108,6 +142,24 @@ $('fullName').value = profile?.full_name || '';
 $('email').value = user.email;
 $('created').value = new Date(profile?.created_at || user.created_at).toLocaleDateString('ru-RU');
 
+// тариф
+const PLANS = {
+  start: { name: 'Старт', price: '0 ₸', per: ' / 14 дней', feat: ['1 пользователь', 'Базовая аналитика', 'Подключение 2 источников данных'] },
+  business: { name: 'Бизнес', price: '29 000 ₸', per: ' / мес', feat: ['До 10 пользователей', 'Прогноз оттока и выручки', 'Автоматизация процессов', 'Приоритетная поддержка'] },
+  enterprise: { name: 'Корпоративный', price: 'По запросу', per: '', feat: ['Без ограничений по людям', 'Свои модели и интеграции', 'Персональный менеджер'] }
+};
+const planKey = PLANS[profile?.plan] ? profile.plan : 'start';
+const pl = PLANS[planKey];
+$('planName').textContent = pl.name;
+$('planPrice').innerHTML = pl.price + (pl.per ? `<small>${pl.per}</small>` : '');
+$('planFeat').innerHTML = pl.feat.map(f => `<li>${f}</li>`).join('');
+if (planKey === 'start') {
+  const left = 14 - Math.floor((Date.now() - new Date(profile?.created_at || user.created_at)) / 864e5);
+  const t = $('planTrial'); t.style.display = 'inline-block';
+  t.textContent = left > 0 ? `Пробный период: осталось ${left} дн.` : 'Пробный период закончился';
+}
+if (planKey === 'enterprise') $('planBtn').style.display = 'none';
+
 // вкладки
 document.querySelectorAll('.side [data-tab]').forEach(b => b.onclick = () => {
   document.querySelectorAll('.side [data-tab]').forEach(x => x.classList.remove('on'));
@@ -148,6 +200,15 @@ if (isAdmin) {
   $('recent').innerHTML = all.slice(0, 5).map(u =>
     `<div class="row"><span>${esc(u.full_name || '—')} · ${esc(u.email)}</span><span>${new Date(u.created_at).toLocaleDateString('ru-RU')}</span></div>`).join('');
 }
+
+// тариф и платежи
+const PLAN = { free: 'Старт', business: 'Бизнес' };
+$('planName').textContent = PLAN[profile?.plan] || 'Старт';
+$('planUntil').textContent = profile?.plan_until ? new Date(profile.plan_until).toLocaleDateString('ru-RU') : '—';
+const { data: pays } = await supabase.from('payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10);
+$('payList').innerHTML = pays?.length
+  ? pays.map(p => `<div class="row"><span>${esc(PLAN[p.plan] || p.plan)} · ${Number(p.amount).toLocaleString('ru-RU')} ₸ (тест)</span><span>${new Date(p.created_at).toLocaleDateString('ru-RU')}</span></div>`).join('')
+  : '<p style="color:#94a3b8">Платежей пока нет</p>';
 
 $('delAcc').onclick = async () => {
   if (!confirm('Удалить аккаунт навсегда? Это нельзя отменить.')) return;
